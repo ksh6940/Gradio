@@ -1,0 +1,28 @@
+pd로 판다를 수입합니다.
+그라데이션을 gr로 가져옵니다.
+
+defread_to_file(파일):
+    received_file = file.name
+    df = pd.read_ csv(received_file)
+
+def chart_to_make(df, 선택):
+    선택사항 == "표"인 경우:
+        chart1 = gr.데이터프레임(df=df)
+
+    elif 선택사항 == "선 그래프":
+        chart2 = gr.라인 차트(df=df)
+    elif 선택사항 == "막대 그래프":
+        chart3 = gr.막대 차트(df=df)
+    elif 선택사항 == "산점도":
+        chart4 = gr.산점도(df=df)
+
+
+gr과 함께블록()을 데모로 표시:
+    inp = gr.파일(label=" 파일")
+    gr과 함께행( ):
+        드롭다운 = gr.Dropdown(label="종류", choices=["표", "선 그래프", "막대 그래프", "산점도"])
+        btn = gr.버튼(value="생성")
+        btn.클릭(버튼_클릭)
+    out = gr.텍스트(label=" 출력")
+
+데모. launch(debug=참, 공유 = 참)
