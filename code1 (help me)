@@ -1,28 +1,78 @@
-pd로 판다를 수입합니다.
-그라데이션을 gr로 가져옵니다.
+import pandas as pd
+import gradio as gr
+import matplotlib.pyplot as plt
 
-defread_to_file(파일):
-    received_file = file.name
-    df = pd.read_ csv(received_file)
+data = None
+def upload_file(files):
+    global data
+    file_paths = [file.name for file in files]
+    file_path = ", ".join(file_paths)
+    print("파일 선택 완료", file_path)
+    read_to_file(file_paths)
 
-def chart_to_make(df, 선택):
-    선택사항 == "표"인 경우:
-        chart1 = gr.데이터프레임(df=df)
+def read_to_file(file_paths):
+    print('파일 읽기 시작')
+    data_1 = [pd.read_csv(file) for file in file_paths]
+    print('리스트 형식 제거')
+    data = pd.concat(data_1)
+    print("변수에 저장하였습니다.")
+    return data
+def chart_to_make(kind, data):
+    df = pd.DataFrame(data)
 
-    elif 선택사항 == "선 그래프":
-        chart2 = gr.라인 차트(df=df)
-    elif 선택사항 == "막대 그래프":
-        chart3 = gr.막대 차트(df=df)
-    elif 선택사항 == "산점도":
-        chart4 = gr.산점도(df=df)
+    if len(df.columns) > 1:
+        x_data = df.iloc[:, 0].values
+        y_data = df.iloc[:, 1:].values
+    else:
+        x_data = df.index.values
+        y_data = df.iloc[:, 0].values
+
+    plt.figure(figsize=(8, 4))
+    print('데이터프레임 생성 완료')
+
+    if kind == "표":
+        plt.axis('off')
+        plt.title("시각화 : 표")
+        print('표 생성 완료')
+    elif kind == "선 그래프":
+        plt.plot(x_data, y_data)
+        plt.title("선 그래프")
+        plt.legend(labels=df.columns[1:])
+        print('선 그래프 생성 완료')
+    elif kind == "막대 그래프":
+        plt.bar(x_data, y_data)
+        plt.title("막대 그래프")
+        plt.legend(labels=df.columns[1:])
+        print('막대 그래프 생성 완료')
+    else:
+        plt.scatter(x_data, y_data)
+        plt.title("산점도")
+        plt.legend(labels=df.columns[1:])
+        print('산점도 생성 완료')
+
+    plt.xlabel("X축")
+    plt.ylabel("Y축")
+
+    plt.savefig('chart.png')
+    plt.close()
+
+    return gr.Image('chart.png')
 
 
-gr과 함께블록()을 데모로 표시:
-    inp = gr.파일(label=" 파일")
-    gr과 함께행( ):
-        드롭다운 = gr.Dropdown(label="종류", choices=["표", "선 그래프", "막대 그래프", "산점도"])
-        btn = gr.버튼(value="생성")
-        btn.클릭(버튼_클릭)
-    out = gr.텍스트(label=" 출력")
+def clear():
+    global data
+    print("초기화 완료")
 
-데모. launch(debug=참, 공유 = 참)
+with gr.Blocks() as demo:
+    with gr.Row():
+        up_btn = gr.UploadButton("업로드", file_types=["csv", "xlsx"], file_count="multiple")
+        up_btn.upload(upload_file, up_btn)
+    with gr.Row():
+        display = gr.Dropdown(["표", "선 그래프", "막대 그래프", "산점도"], multiselect=False, label="kind", type="index")
+        run_btn = gr.Button(value="실행")
+        run_btn.click(lambda: chart_to_make(display.value, data))
+        clear_btn = gr.ClearButton(value="초기화")
+        clear_btn.click(fn=clear)
+    img_out = gr.Image(label="출력")
+
+demo.launch(debug=True, share=True)
